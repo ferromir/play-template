@@ -1,0 +1,2 @@
+# Health check
+GET /hc controllers.HealthCheckController.status()
