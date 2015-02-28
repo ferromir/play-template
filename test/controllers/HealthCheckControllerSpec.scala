@@ -16,7 +16,7 @@ object HealthCheckControllerSpec extends PlaySpecification with Results {
           val uri = routes.HealthCheckController.status().url
           val req = FakeRequest("GET", uri)
           val Some(result) = route(req)
-          status(result) must be equalTo(OK)
+          status(result) must be equalTo (OK)
         }
       }
     }

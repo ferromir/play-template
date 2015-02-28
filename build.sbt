@@ -52,7 +52,7 @@ scalaSource in IntegrationTest <<= baseDirectory(_ / "it")
 
 lazy val qa = TaskKey[Unit]("qa")
 
-qa := clean
+qa := clean.value
 
 qa <<= qa dependsOn (test in IntegrationTest)
 
