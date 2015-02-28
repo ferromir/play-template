@@ -61,3 +61,5 @@ qa <<= qa dependsOn (test in Test)
 qa <<= qa dependsOn coverage
 
 qa <<= qa dependsOn clean
+
+scalariformSettings
