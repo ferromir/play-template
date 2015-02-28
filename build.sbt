@@ -7,6 +7,10 @@ scalaVersion := "2.11.4"
 
 Defaults.itSettings
 
+Revolver.settings
+
+scalariformSettings
+
 lazy val root = (project in file(".")) enablePlugins(PlayScala) configs(IntegrationTest)
 
 libraryDependencies ++= {
@@ -16,8 +20,6 @@ libraryDependencies ++= {
     "com.typesafe.play" %% "play-ws"   % playVersion % "it"
   )
 }
-
-Revolver.settings
 
 outputPath in assembly := file("target/assembly/" + name.value + ".jar")
 
@@ -61,5 +63,3 @@ qa <<= qa dependsOn (test in Test)
 qa <<= qa dependsOn coverage
 
 qa <<= qa dependsOn clean
-
-scalariformSettings
