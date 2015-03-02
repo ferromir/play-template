@@ -17,8 +17,7 @@ libraryDependencies ++= {
   val playVersion = play.core.PlayVersion.current
   Seq(
     "com.typesafe.play" %% "play-test"     % playVersion % "test,it",
-    "com.typesafe.play" %% "play-ws"       % playVersion % "it",
-    "com.wordnik"       %% "swagger-play2" % "1.3.12"
+    "com.typesafe.play" %% "play-ws"       % playVersion % "it"
   )
 }
 
@@ -64,3 +63,7 @@ qa <<= qa dependsOn (test in Test)
 qa <<= qa dependsOn coverage
 
 qa <<= qa dependsOn clean
+
+javaOptions in Revolver.reStart += s"-Dconfig.file=conf/local.application.conf"
+
+javaOptions in Test += s"-Dconfig.file=conf/test.application.conf"

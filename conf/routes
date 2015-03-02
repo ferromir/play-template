@@ -1,5 +1,2 @@
-GET /api-docs controllers.ApiHelpController.getResources
-
 # Health check
-GET /api-docs/hc controllers.ApiHelpController.getResource(path = "/hc")
-GET /hc          controllers.HealthCheckController.getStatus()
+GET /hc controllers.HealthCheckController.get()
