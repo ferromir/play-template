@@ -17,10 +17,22 @@
 package controllers
 
 import play.api.mvc._
+import play.api.libs.json._
+import com.wordnik.swagger.annotations._
 
+@Api(value = "/hc", description = "Health check")
 trait HealthCheckController { this: Controller =>
 
-  def status: Action[AnyContent] = Action { Ok }
+  case class HealthCheckStatus(status: String)
+  implicit val statusFmt = Json.format[HealthCheckStatus]
+
+  @ApiOperation(
+    httpMethod = "GET",
+    value = "get status",
+    nickname = "getStatus",
+    response = classOf[HealthCheckStatus]
+  )
+  def getStatus = Action { Ok(Json.toJson(HealthCheckStatus("ok"))) }
 }
 
 object HealthCheckController extends Controller with HealthCheckController

@@ -16,8 +16,9 @@ lazy val root = (project in file(".")) enablePlugins(PlayScala) configs(Integrat
 libraryDependencies ++= {
   val playVersion = play.core.PlayVersion.current
   Seq(
-    "com.typesafe.play" %% "play-test" % playVersion % "test,it",
-    "com.typesafe.play" %% "play-ws"   % playVersion % "it"
+    "com.typesafe.play" %% "play-test"     % playVersion % "test,it",
+    "com.typesafe.play" %% "play-ws"       % playVersion % "it",
+    "com.wordnik"       %% "swagger-play2" % "1.3.12"
   )
 }
 
