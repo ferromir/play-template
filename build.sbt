@@ -64,6 +64,6 @@ qa <<= qa dependsOn coverage
 
 qa <<= qa dependsOn clean
 
-javaOptions in Revolver.reStart += s"-Dconfig.file=conf/local.application.conf"
+javaOptions in Revolver.reStart += "-Dconfig.file=conf/local.application.conf"
 
-javaOptions in Test += s"-Dconfig.file=conf/test.application.conf"
+javaOptions in Test += "-Dconfig.file=conf/test.application.conf"
