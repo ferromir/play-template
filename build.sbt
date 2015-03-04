@@ -17,9 +17,13 @@ libraryDependencies ++= {
   val playVersion = play.core.PlayVersion.current
   Seq(
     "com.typesafe.play" %% "play-test"     % playVersion % "test,it",
-    "com.typesafe.play" %% "play-ws"       % playVersion % "it"
+    "com.typesafe.play" %% "play-ws"       % playVersion % "it",
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka23",
+    "org.specs2" %% "specs2-core" % "3.0" % "test"
   )
 }
+
+resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 outputPath in assembly := file("target/assembly/" + name.value + ".jar")
 
