@@ -16,14 +16,12 @@
 
 package controllers
 
+import models.TodoItem
 import play.api.Logger
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits._
-
-import models.TodoItem
-
-import scala.concurrent.Future
+import play.modules.reactivemongo.json.BSONFormats._
 
 trait TodoController { this: Controller =>
 
@@ -47,8 +45,31 @@ trait TodoController { this: Controller =>
 
     modelValidation.fold(
       errors => { BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors))) },
-      todoItem => { TodoItem.save(todoItem); CreatedOrUpdated }
+      todoItem => {
+        TodoItem.save(todoItem);
+        CreatedOrUpdated
+      }
     )
+  }
+
+  def update(id: String) = Action.async { request =>
+    val reqBody = request.body.asFormUrlEncoded
+
+    TodoItem.find(id) map { record =>
+
+      record match {
+        case Some(item: TodoItem) => {
+          val uDescription = reqBody flatMap (m => m.get("description")) flatMap (_.headOption) getOrElse item.description
+          val uCompletionStatus = reqBody flatMap (m => m.get("completed")) flatMap (_.headOption) getOrElse item.completed
+          val updatedItem = TodoItem(item._id, uDescription, uCompletionStatus.toString.toBoolean)
+          println(s"TodoItem: $updatedItem")
+          TodoItem.save(updatedItem)
+
+          CreatedOrUpdated
+        }
+        case _ => BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
+      }
+    }
   }
 
 }

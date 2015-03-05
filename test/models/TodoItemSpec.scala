@@ -10,6 +10,7 @@ import play.api.test._
 
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
+import play.modules.reactivemongo.json.BSONFormats._
 
 class TodoItemSpec extends PlaySpecification with BeforeAfter {
 
@@ -17,7 +18,7 @@ class TodoItemSpec extends PlaySpecification with BeforeAfter {
 
   val id = "abcdefghijklmn"
 
-  def before = collection.insert(TodoItem(Some(id), "text"))
+  def before = collection.insert(TodoItem(None, "text"))
   def after = collection.remove(Json.obj("id" -> id))
 
   "Model: TodoItem" should {
