@@ -1,4 +1,5 @@
 import controllers._
+import models.datastore.MongoDBDataStore
 
 import play.api.libs.json._
 import play.api.test._
@@ -8,7 +9,7 @@ object TodoControllerSpec extends PlaySpecification with Results {
 
   "TodoController" should {
 
-    class TestController extends Controller with TodoController
+    class TestController extends Controller with TodoController with MongoDBDataStore
     val controller = new TestController()
 
     "#all" should {

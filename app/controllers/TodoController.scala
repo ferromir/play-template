@@ -16,26 +16,27 @@
 
 package controllers
 
+import models.datastore.{ MongoDBDataStore, DataStore }
 import models.TodoItem
-import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import play.api.mvc._
-import play.modules.reactivemongo.json.BSONFormats._
 
-trait TodoController { this: Controller =>
+trait TodoController { this: Controller with DataStore =>
 
   val CreatedOrUpdated = Status(201)
 
+  implicit val todoItemWrites = Json.format[TodoItem]
+
   def get(id: String) = Action.async {
-    TodoItem.find(id) map { item =>
-      implicit val todoItemFormat = Json.format[TodoItem]
+    find[TodoItem](id) map { item =>
       Ok(Json.toJson(item))
     }
   }
 
   def all = Action.async {
-    TodoItem.findAll() map { items =>
+    findAll[TodoItem] map { items =>
+      println(s"items: $items")
       Ok(Json.toJson(items))
     }
   }
@@ -46,7 +47,7 @@ trait TodoController { this: Controller =>
     modelValidation.fold(
       errors => { BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors))) },
       todoItem => {
-        TodoItem.save(todoItem);
+        //save[TodoItem](todoItem) map (_ => CreatedOrUpdated)
         CreatedOrUpdated
       }
     )
@@ -55,15 +56,15 @@ trait TodoController { this: Controller =>
   def update(id: String) = Action.async { request =>
     val reqBody = request.body.asFormUrlEncoded
 
-    TodoItem.find(id) map { record =>
-
-      record match {
-        case Some(item: TodoItem) => {
+    find[TodoItem](id) map { persisted =>
+      persisted match {
+        case Some(item) => {
           val uDescription = reqBody flatMap (m => m.get("description")) flatMap (_.headOption) getOrElse item.description
           val uCompletionStatus = reqBody flatMap (m => m.get("completed")) flatMap (_.headOption) getOrElse item.completed
-          val updatedItem = TodoItem(item._id, uDescription, uCompletionStatus.toString.toBoolean)
-          println(s"TodoItem: $updatedItem")
-          TodoItem.save(updatedItem)
+
+          val updatedItem = TodoItem(item.id, uDescription, uCompletionStatus.toString.toBoolean)
+
+          //save[TodoItem](updatedItem)
 
           CreatedOrUpdated
         }
@@ -74,4 +75,4 @@ trait TodoController { this: Controller =>
 
 }
 
-object TodoController extends Controller with TodoController
+object TodoController extends Controller with TodoController with MongoDBDataStore

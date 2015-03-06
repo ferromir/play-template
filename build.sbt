@@ -47,7 +47,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
-(testOptions in Test) += Tests.Argument(TestFrameworks.Specs2, "html", "console")
+(testOptions in Test) += Tests.Argument(TestFrameworks.Specs2, "console")
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 
