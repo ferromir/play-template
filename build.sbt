@@ -17,16 +17,15 @@ resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-resolvers += "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
+resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 libraryDependencies ++= {
   val playVersion = play.core.PlayVersion.current
   Seq(
     "com.typesafe.play" %% "play-test"     % playVersion % "test,it",
     "com.typesafe.play" %% "play-ws"       % playVersion % "it",
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka23",
-    "org.specs2" %% "specs2-core" % "3.0" % "test",
-    "org.specs2" %% "specs2-html" % "3.0" % "test"
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.11.0-SNAPSHOT",
+    "com.github.athieriot" %% "specs2-embedmongo" % "0.7.0"
   )
 }
 
@@ -46,8 +45,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
-
-(testOptions in Test) += Tests.Argument(TestFrameworks.Specs2, "console")
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 

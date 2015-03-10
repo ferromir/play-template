@@ -1,4 +1,8 @@
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.4")
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+
+resolvers += "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
+
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.0-M2")
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")
 
@@ -11,7 +15,3 @@ addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "0.94.6")
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.6.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
-
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-
-resolvers += "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"

@@ -1,9 +1,12 @@
 package models
 
-import scala.util.Random
+case class TodoItem(description: String, completed: Boolean = false) extends Persistable {
 
-case class TodoItem(
-  id: String = new Random().nextString(32), // TODO: To complete
-  description: String,
-  completed: Boolean = false
-)
+  def update(description: String, completed: Boolean): TodoItem = {
+    this.copy(description = description, completed = completed)
+  }
+
+  def unapply(t: TodoItem): Option[(String, String, Boolean)] =
+    Some(t.id, t.description, t.completed)
+
+}

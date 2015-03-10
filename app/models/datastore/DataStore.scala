@@ -1,5 +1,6 @@
 package models.datastore
 
+import models.Persistable
 import play.api.libs.json.{ Writes, Reads }
 
 import scala.concurrent.Future
@@ -13,7 +14,11 @@ trait DataStore {
 
   def findAll[T](implicit ct: ClassTag[T], reader: Reads[T]): Future[Seq[T]]
 
-  def save[T](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T]): Future[Boolean]
+  def persist[T](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T]): Future[Boolean]
+
+  def modify[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T]): Future[Boolean]
+
+  def remove[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T]): Future[Boolean]
 
 }
 
