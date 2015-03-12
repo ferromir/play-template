@@ -7,25 +7,26 @@ scalaVersion := "2.11.4"
 
 Defaults.itSettings
 
-Revolver.settings
-
-scalariformSettings
-
-lazy val root = (project in file(".")) enablePlugins(PlayScala) configs(IntegrationTest)
-
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+Revolver.settings
+
+scalariformSettings
+
+lazy val root = (project in file(".")) enablePlugins(PlayScala) configs(IntegrationTest)
+
 libraryDependencies ++= {
   val playVersion = play.core.PlayVersion.current
   Seq(
-    "com.typesafe.play" %% "play-test"     % playVersion % "test,it",
-    "com.typesafe.play" %% "play-ws"       % playVersion % "it",
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.11.0-SNAPSHOT",
-    "com.github.athieriot" %% "specs2-embedmongo" % "0.7.0"
+    "com.typesafe.play"     %% "play-test"              % playVersion % "test,it",
+    "com.typesafe.play"     %% "play-ws"                % playVersion % "it",
+    "org.reactivemongo"     %% "play2-reactivemongo"    % "0.10.5.0.akka23",
+    "org.specs2"            %% "specs2-core"            % "3.0.1" % "test",
+    "com.github.athieriot"  %% "specs2-embedmongo"      % "0.7.0"
   )
 }
 

@@ -2,14 +2,20 @@ package controllers
 
 import com.github.athieriot.EmbedConnection
 import de.flapdoodle.embed.mongo.distribution.Version
-import play.api.libs.json.{ JsValue, JsArray }
+import helpers.MongoFixtureHelpers
+import play.api.libs.json.{ Json, JsValue, JsArray }
 import play.api.test._
+import org.specs2.specification.BeforeAll
+import org.specs2.specification.Action
 
-object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnection {
+object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnection with MongoFixtureHelpers with BeforeAll {
+
+  override def embedConnectionPort(): Int = { 27017 }
+  override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_7 }
+
+  def beforeAll: Any = loadFixture("todolist_test", "todoitem", "test/fixtures/todoitem-1.json")
 
   sequential
-
-  override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_7 }
 
   "TodoController" should {
 
@@ -28,7 +34,7 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
 
     "#get" should {
       "return the todo item by its id" in new WithApplication(FakeApplication()) {
-        val id = "todoitem-1"
+        val id = "550073d2428081fe37ed4410"
         val uri = routes.TodoController.get(id).url
         val req = FakeRequest("GET", uri)
         val Some(result) = route(req)
@@ -38,8 +44,8 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
       }
     }
 
-    /*"#save" should {
-      "store a new todo item" in {
+    "#save" should {
+      "store a new todo item" in new WithApplication(FakeApplication()) {
         val uri = routes.TodoController.save().url
         val req = FakeRequest("POST", uri) withJsonBody (Json.obj("description" -> "My Task"))
         val Some(result) = route(req)
@@ -49,8 +55,8 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
     }
 
     "#update" should {
-      "update a todo item" in {
-        val id = "todoitem-1"
+      "update a todo item" in new WithApplication(FakeApplication()) {
+        val id = "550073d2428081fe37ed4410"
         val uri = routes.TodoController.update(id).url
         val req = FakeRequest("PUT", uri) withFormUrlEncodedBody ("completed" -> "true")
         val Some(result) = route(req)
@@ -60,15 +66,15 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
     }
 
     "#delete" should {
-      "delet a todo item" in {
-        val id = "54f8bf000d00000e00c5a8b4"
+      "delet a todo item" in new WithApplication(FakeApplication()) {
+        val id = "550073d2428081fe37ed4410"
         val uri = routes.TodoController.delete(id).url
         val req = FakeRequest("DELETE", uri)
         val Some(result) = route(req)
 
-        status(result) must be equalTo 201
+        status(result) must be equalTo 200
       }
-    }*/
+    }
   }
 
 }

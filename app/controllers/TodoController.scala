@@ -22,6 +22,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import play.api.mvc._
 
+import scalaz.concurrent.Future.Async
+
 case class CreateTodo(description: String)
 
 trait TodoController { this: Controller with DataStore =>
@@ -60,25 +62,31 @@ trait TodoController { this: Controller with DataStore =>
     val reqBody = request.body.asFormUrlEncoded
 
     find[TodoItem](id) map { persisted =>
-
       persisted match {
         case Some(item: TodoItem) => {
           val uDescription = reqBody flatMap (m => m.get("description")) flatMap (_.headOption) getOrElse item.description
           val uCompletionStatus = reqBody flatMap (m => m.get("completed")) flatMap (_.headOption) getOrElse item.completed
-
           val updatedItem = item.update(uDescription, uCompletionStatus.toString toBoolean)
 
           modify[TodoItem](updatedItem)
-
           Ok
         }
         case _ => BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
       }
-
     }
   }
 
-  def delete(id: String) = TODO
+  def delete(id: String) = Action.async { request =>
+    find[TodoItem](id) map { e =>
+      e match {
+        case Some(item: TodoItem) => {
+          remove[TodoItem](item)
+          Ok
+        }
+        case _ => BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
+      }
+    }
+  }
 
 }
 
