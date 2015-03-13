@@ -51,7 +51,7 @@ trait TodoController { this: Controller with DataStore =>
     modelValidation.fold(
       errors => { BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors))) },
       createTodo => {
-        persist[TodoItem](TodoItem(description = createTodo.description)) map (_ => CreatedOrUpdated)
+        persist[TodoItem](TodoItem("", description = createTodo.description)) map (_ => CreatedOrUpdated)
 
         CreatedOrUpdated
       }
