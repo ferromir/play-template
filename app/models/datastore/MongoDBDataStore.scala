@@ -21,6 +21,7 @@ import play.api.libs.json.{ Writes, Reads, Json }
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.Play.current
+import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.ClassTag
@@ -28,6 +29,8 @@ import scala.reflect.ClassTag
 trait MongoDBDataStore extends DataStore {
 
   private def db = ReactiveMongoPlugin.db
+
+  override def newID(): String = BSONObjectID.generate.stringify
 
   override def find[T](id: String)(implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Option[T]] =
     collectionOf.find(Json.obj("id" -> id)).cursor[T].headOption
@@ -42,7 +45,10 @@ trait MongoDBDataStore extends DataStore {
   }
 
   override def persist[T](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T], ec: ExecutionContext): Future[Boolean] = {
-    collectionOf[T].insert(obj) map (_ => true)
+    collectionOf[T].insert(obj) map { lastError =>
+      if (lastError.inError) throw new Exception("Couldn't persist the document")
+      else true
+    }
   }
 
   override def modify[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T], ec: ExecutionContext): Future[Boolean] = {
@@ -52,7 +58,10 @@ trait MongoDBDataStore extends DataStore {
 
   override def remove[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Boolean] = {
     val q = Json.obj("id" -> obj.id)
-    collectionOf[T].remove(q) map (_ => true)
+    collectionOf[T].remove(q) map { lastError =>
+      if (lastError.inError) throw new Exception("Couldn't persist the document")
+      else true
+    }
   }
 
   private def collectionOf[T](implicit ct: ClassTag[T]) = {

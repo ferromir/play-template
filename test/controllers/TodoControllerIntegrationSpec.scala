@@ -32,7 +32,7 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
   override def embedConnectionPort(): Int = { 27017 }
   override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_7 }
 
-  implicit val todoItemFormat = Json.format[TodoItem]
+  implicit val todoItemFormat = Json.format[TodoItem] // TODO: To be removed to avoid DRY (it's app code too)
 
   sequential
 
@@ -41,7 +41,6 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
     "#all" should {
       "return all todo items" in new WithApplication(FakeApplication()) {
         val todos = for (n <- 1 until 5) yield TodoItem(newId, s"Task $n for GET: /todos", false)
-
         Await.result(loadDocuments[TodoItem](todos), 10 seconds)
 
         val uri = routes.TodoController.all().url
@@ -68,6 +67,8 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
         status(result) must be equalTo OK
         contentAsString(result) must contain(todo.id)
         contentAsJson(result) must beAnInstanceOf[JsValue]
+
+        Await.result(clean[TodoItem](Map("id" -> todo.id)), 10 seconds)
       }
     }
 

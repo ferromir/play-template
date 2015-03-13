@@ -16,12 +16,14 @@
 
 package controllers
 
+import com.sun.xml.internal.ws.client.AsyncResponseImpl
 import models.datastore.{ MongoDBDataStore, DataStore }
 import models.TodoItem
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import play.api.mvc._
 
+import scala.concurrent.Future
 import scalaz.concurrent.Future.Async
 
 case class CreateTodo(description: String)
@@ -45,20 +47,18 @@ trait TodoController { this: Controller with DataStore =>
     }
   }
 
-  def save = Action(BodyParsers.parse.json) { request =>
+  def save = Action.async(BodyParsers.parse.json) { implicit request =>
     val modelValidation = request.body.validate[CreateTodo]
 
     modelValidation.fold(
-      errors => { BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors))) },
+      errors => { Future.successful(BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))) },
       createTodo => {
-        persist[TodoItem](TodoItem("", description = createTodo.description)) map (_ => CreatedOrUpdated)
-
-        CreatedOrUpdated
-      }
+        persist[TodoItem](TodoItem(description = createTodo.description)) map (_ => CreatedOrUpdated)
+      }.recover { case e: Exception => InternalServerError(e.getMessage) }
     )
   }
 
-  def update(id: String) = Action.async { request =>
+  def update(id: String) = Action.async { implicit request =>
     val reqBody = request.body.asFormUrlEncoded
 
     find[TodoItem](id) map { persisted =>

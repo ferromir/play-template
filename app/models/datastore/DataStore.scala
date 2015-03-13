@@ -21,6 +21,7 @@ import play.api.libs.json.{ Writes, Reads }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.ClassTag
+import scala.util.Random
 
 trait DataStore {
 
@@ -36,6 +37,7 @@ trait DataStore {
 
   def remove[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Boolean]
 
+  def newID: String = new Random(System.currentTimeMillis()).nextString(12)
 }
 
-//TODO a JsonDataStore for databases like MongoDB
+// TODO: A JSONDataStore trait with JSON conversion? (and remove them from base DataStore trait)

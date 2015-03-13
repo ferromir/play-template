@@ -16,13 +16,16 @@
 
 package models
 
-case class TodoItem(override val id: String, description: String, completed: Boolean = false) extends Persistable {
+import scala.util.Random
+
+case class TodoItem(
+  override val id: String = new Random(System.currentTimeMillis()).nextString(12),
+    description: String,
+    completed: Boolean = false
+) extends Persistable {
 
   def update(description: String, completed: Boolean): TodoItem = {
     this.copy(description = description, completed = completed)
   }
-
-  def unapply(t: TodoItem): Option[(String, String, Boolean)] =
-    Some(t.id, t.description, t.completed)
 
 }
