@@ -75,10 +75,14 @@ trait TodoController { this: Controller with DataStore =>
           val updatedItem = item.update(uDescription, uCompletionStatus)
 
           modify[TodoItem](updatedItem) map (_ => updatePromise.trySuccess(Ok))
-        }.recover { case e: Exception => updatePromise.trySuccess(InternalServerError(e.getMessage)) }
-
+        }.recover {
+          case e: Exception =>
+            updatePromise.trySuccess(InternalServerError(e.getMessage))
+        }
         case _ => {
-          updatePromise.trySuccess(BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'")))
+          updatePromise.trySuccess(
+            BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
+          )
         }
       }
     }
