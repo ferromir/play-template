@@ -32,7 +32,7 @@ object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnect
   override def embedConnectionPort(): Int = { 27017 }
   override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_7 }
 
-  implicit val todoItemFormat = Json.format[TodoItem] // TODO: To be removed to avoid DRY (it's app code too)
+  implicit val todoItemFormat = Json.format[TodoItem] // TODO: To be removed to avoid DRY (it's app code also)
 
   sequential
 

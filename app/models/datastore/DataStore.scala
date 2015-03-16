@@ -40,4 +40,3 @@ trait DataStore {
   def newID: String = new Random(System.currentTimeMillis()).nextString(12)
 }
 
-// TODO: A JSONDataStore trait with JSON conversion? (and remove them from base DataStore trait)

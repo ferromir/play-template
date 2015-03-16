@@ -16,21 +16,19 @@
 
 package controllers
 
-import com.sun.xml.internal.ws.client.AsyncResponseImpl
 import models.datastore.{ MongoDBDataStore, DataStore }
 import models.TodoItem
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.Future
-import scalaz.concurrent.Future.Async
+import scala.concurrent.{ Promise, Future }
 
 case class CreateTodo(description: String)
 
 trait TodoController { this: Controller with DataStore =>
 
-  val CreatedOrUpdated = Status(201)
+  val TodoCreated = Status(201)
 
   implicit val todoItemFormat = Json.format[TodoItem]
   implicit val createTodoItemReads = Json.reads[CreateTodo]
@@ -51,9 +49,14 @@ trait TodoController { this: Controller with DataStore =>
     val modelValidation = request.body.validate[CreateTodo]
 
     modelValidation.fold(
-      errors => { Future.successful(BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))) },
+      errors => {
+        val result = BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))
+        Future.successful(result)
+      },
       createTodo => {
-        persist[TodoItem](TodoItem(description = createTodo.description)) map (_ => CreatedOrUpdated)
+        val newTodo = TodoItem(description = createTodo.description)
+
+        persist[TodoItem](newTodo) map (_ => TodoCreated)
       }.recover { case e: Exception => InternalServerError(e.getMessage) }
     )
   }
@@ -61,31 +64,43 @@ trait TodoController { this: Controller with DataStore =>
   def update(id: String) = Action.async { implicit request =>
     val reqBody = request.body.asFormUrlEncoded
 
+    val updatePromise = Promise[Result]
+
     find[TodoItem](id) map { persisted =>
       persisted match {
         case Some(item: TodoItem) => {
-          val uDescription = reqBody flatMap (m => m.get("description")) flatMap (_.headOption) getOrElse item.description
-          val uCompletionStatus = reqBody flatMap (m => m.get("completed")) flatMap (_.headOption) getOrElse item.completed
-          val updatedItem = item.update(uDescription, uCompletionStatus.toString toBoolean)
+          val uDescription = reqBody flatMap (m => m.get("description")) flatMap (_.headOption)
+          val uCompletionStatus = reqBody flatMap (m => m.get("completed")) flatMap (_.headOption)
 
-          modify[TodoItem](updatedItem)
-          Ok
+          val updatedItem = item.update(uDescription, uCompletionStatus)
+
+          modify[TodoItem](updatedItem) map (_ => updatePromise.trySuccess(Ok))
+        }.recover { case e: Exception => updatePromise.trySuccess(InternalServerError(e.getMessage)) }
+
+        case _ => {
+          updatePromise.trySuccess(BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'")))
         }
-        case _ => BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
       }
     }
+
+    updatePromise.future
   }
 
   def delete(id: String) = Action.async { request =>
+    val deletePromise = Promise[Result]
+
     find[TodoItem](id) map { e =>
       e match {
         case Some(item: TodoItem) => {
-          remove[TodoItem](item)
-          Ok
+          remove[TodoItem](item) map (_ => deletePromise.trySuccess(Ok))
+        }.recover { case e: Exception => deletePromise.trySuccess(InternalServerError(e.getMessage)) }
+        case _ => {
+          deletePromise.trySuccess(BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'")))
         }
-        case _ => BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
       }
     }
+
+    deletePromise.future
   }
 
 }

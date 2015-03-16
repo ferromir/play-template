@@ -19,13 +19,16 @@ package models
 import scala.util.Random
 
 case class TodoItem(
-  override val id: String = new Random(System.currentTimeMillis()).nextString(12),
+    override val id: String = new Random(System.currentTimeMillis()).nextString(12),
     description: String,
     completed: Boolean = false
 ) extends Persistable {
 
-  def update(description: String, completed: Boolean): TodoItem = {
-    this.copy(description = description, completed = completed)
+  def update(_description: Option[String], _completed: Option[String]): TodoItem = {
+    this.copy(
+      description = _description.getOrElse(description),
+      completed = _completed.map(compl => compl.toBoolean).getOrElse(completed)
+    )
   }
 
 }
