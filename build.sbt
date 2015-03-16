@@ -24,6 +24,7 @@ libraryDependencies ++= {
   Seq(
     "com.typesafe.play"     %% "play-test"              % playVersion % "test,it",
     "com.typesafe.play"     %% "play-ws"                % playVersion % "it",
+    ws % "it",
     "org.reactivemongo"     %% "play2-reactivemongo"    % "0.10.5.0.akka23",
     "com.github.athieriot"  %% "specs2-embedmongo"      % "0.7.0"
   )
