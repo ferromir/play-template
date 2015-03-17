@@ -1,4 +1,4 @@
-package helpers
+package ithelpers
 
 import models.TodoItem
 import reactivemongo.bson.{BSONDocumentWriter, BSONDocument, BSONDocumentReader}
@@ -19,7 +19,7 @@ object BSONFormatters {
     def write(item: TodoItem): BSONDocument = {
       BSONDocument(
         "id" -> item.id,
-        "description" -> item.completed,
+        "description" -> item.description,
         "completed" -> item.completed
       )
     }
