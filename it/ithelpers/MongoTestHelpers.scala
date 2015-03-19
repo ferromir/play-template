@@ -30,44 +30,47 @@ import reactivemongo.api.collections.default._
 
 trait MongoTestHelpers {
 
-  def mongoUri(): String = "localhost:27017/todolist_dev"
+  def mongoServers() = { "localhost:27017" }
+  def mongoDbName() = { "test" }
 
-  lazy val db:DB = {
+  def db:DB = {
     val driver = MongoDriver()
+    val servers = mongoServers().split(",")
+    val connection = driver.connection(servers.toSeq)
 
-    val s = mongoUri().split("/")
-    for(host <- Try(s(0));
-        database <- Try(s(1));
-        connection = driver.connection(List(host));
-        db = connection.db(database)) yield db
-  }.get
+    connection.db(mongoDbName())
+  }
 
-  def mongoDB(col: String): DBHelpers = new DBHelpers(db, col)
+  def newId(): String = BSONObjectID.generate.stringify
+
+  def dbHelperFor(col: String): DBHelpers = new DBHelpers(db, col)
 
 }
 
 class DBHelpers(db: DB, col: String) {
 
-  val collection = db.collection[BSONCollection](col)
+  def collection = db.collection[BSONCollection](col)
 
-  def newId(): String = BSONObjectID.generate.stringify
+  def create[T](dataFn: => T)(implicit writer: BSONDocumentWriter[T]): T = {
+    val data = dataFn
 
-  def create[T](d: => T)(implicit writer: BSONDocumentWriter[T]): T = {
     val p = () => {
-      collection.insert(d).map { lastError =>
+      collection.insert(data).map { lastError =>
         if (lastError.inError) throw new Exception("Couldn't save the document")
-        else d
+        else data
       }
     }
 
     Await.result(p(), 10 seconds)
   }
 
-  def create[T](d: => Seq[T])(implicit writer: BSONDocumentWriter[T]): Seq[T] = {
+  def create[T](dataFn: => Seq[T])(implicit writer: BSONDocumentWriter[T]): Seq[T] = {
+    val data = dataFn
+
     val p = () => {
-      collection.bulkInsert(Enumerator.enumerate(d)).map { n =>
-        if (n != d.length) throw new Exception("Couldn't save the document")
-        else d
+      collection.bulkInsert(Enumerator.enumerate(data)).map { n =>
+        if (n != data.length) throw new Exception("Couldn't save the document")
+        else data
       }
     }
 
@@ -98,16 +101,17 @@ class DBHelpers(db: DB, col: String) {
     Await.result(p(), 10 seconds)
   }
 
-  def findOne[T](q: => Map[String, String])(implicit reader: BSONDocumentReader[T]): Option[T] = {
+  def findOne[T](q: (String, String)*)(implicit reader: BSONDocumentReader[T]): Option[T] = {
     val p = () => {
-      val query = BSONDocument()
+      val query = q.foldLeft(BSONDocument.empty)((d,p) => d ++ BSONDocument(p._1 -> p._2))
+
       collection.find(query).cursor[T].headOption
     }
 
     Await.result(p(), 10 seconds)
   }
 
-  def cleanCollection(): Boolean = {
+  def cleanCollection: Boolean = {
     val p = () => {
       val query = BSONDocument()
 
@@ -119,5 +123,7 @@ class DBHelpers(db: DB, col: String) {
 
     Await.result(p(), 10 seconds)
   }
+
+  def closeDB = db.connection.close()
 }
 

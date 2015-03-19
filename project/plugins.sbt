@@ -2,7 +2,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.4")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.7")
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")
 
