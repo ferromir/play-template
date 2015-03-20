@@ -21,8 +21,8 @@ import org.specs2.specification.{BaseSpecification, Fragments, Step}
 // http://stackoverflow.com/questions/16936811/execute-code-before-and-after-specification
 trait BeforeAfterAll extends BaseSpecification {
 
-  override def map(fragments: => Fragments) =
-    Step(beforeAll) ^ fragments ^ Step(afterAll)
+  override def map(fs: => Fragments) =
+    Step(beforeAll) ^ fs ^ Step(afterAll)
 
   protected def beforeAll()
   protected def afterAll()
