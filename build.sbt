@@ -30,6 +30,8 @@ libraryDependencies ++= {
   )
 }
 
+scalacOptions in Test ++= Seq("-Yrangepos")
+
 outputPath in assembly := file("target/assembly/" + name.value + ".jar")
 
 test in assembly := {}
@@ -60,6 +62,8 @@ coverageMinimum := 100
 coverageExcludedPackages := "<empty>;Reverse.*"
 
 scalaSource in IntegrationTest <<= baseDirectory(_ / "it")
+
+testOptions in IntegrationTest := Seq(Tests.Filter(s => s.endsWith("ITSpec")))
 
 lazy val qa = TaskKey[Unit]("qa")
 

@@ -1,10 +1,10 @@
-import ithelpers.TestConfiguration
+import ithelpers.{TestConfigurationAndHelpers }
 import play.api.test._
 import play.api.mvc._
 import play.api.Play.current
 import play.api.libs.ws._
 
-object HealthCheckControllerSpec extends PlaySpecification with Results with TestConfiguration {
+object HealthCheckControllerITSpec extends PlaySpecification with Results with TestConfigurationAndHelpers {
 
   val port = 9000
   val url = s"http://localhost:$port/hc"

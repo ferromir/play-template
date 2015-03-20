@@ -14,7 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import ithelpers.{TestConfiguration, MongoTestHelpers, BeforeAfterAll}
+import de.flapdoodle.embed.mongo.distribution.Version
+import ithelpers.{EmbeddedMongoHelper, TestConfigurationAndHelpers, MongoTestHelpers, BeforeAfterAll}
 import models.TodoItem
 
 import play.api.libs.json.{JsObject, Json, JsArray}
@@ -23,13 +24,15 @@ import play.api.libs.ws._
 
 import ithelpers.BSONFormatters._
 
-class TodoControllerSpec extends PlaySpecification
-                              with TestConfiguration
+class TodoControllerITSpec extends PlaySpecification
+                              with EmbeddedMongoHelper
+                              with TestConfigurationAndHelpers
                               with MongoTestHelpers
                               with BeforeAfterAll {
 
   override def mongoServers() = TEST_MONGO_SERVERS
   override def mongoDbName() = TEST_MONGO_DB
+  override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_7 }
 
   val port = 9000
   val url = s"http://localhost:$port/todos"
@@ -38,8 +41,8 @@ class TodoControllerSpec extends PlaySpecification
 
   def TodoItemDBH = dbHelperFor("todoitem")
 
-  def beforeAll = TodoItemDBH.cleanCollection
-  def afterAll = TodoItemDBH.closeDB
+  def beforeAll = { startMongo(); TodoItemDBH.cleanCollection }
+  def afterAll = { TodoItemDBH.closeDB; stoptMongo() }
 
   "GET to /todos" should {
     "return all persisted data" in new WithServer(fakeApp, port) {
@@ -110,8 +113,6 @@ class TodoControllerSpec extends PlaySpecification
       val todo = TodoItemDBH.create[TodoItem] {
         TodoItem(newId, "Task for DELETE: /todos/:id", false)
       }
-
-      println("TODO ID: " + todo.id)
 
       val response = await(WS.url(s"$url/${todo.id}").delete())
 
