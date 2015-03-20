@@ -18,6 +18,7 @@ package models
 
 import scala.util.Random
 
+// TODO: Improve the ID generation
 case class TodoItem(
     override val id: String = new Random(System.currentTimeMillis()).nextString(12),
     description: String,
