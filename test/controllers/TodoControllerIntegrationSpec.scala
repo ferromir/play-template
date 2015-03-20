@@ -27,12 +27,15 @@ import play.api.test._
 import scala.concurrent._
 import scala.concurrent.duration._
 
-object TodoControllerIntegrationSpec extends PlaySpecification with EmbedConnection with MongoTestHelpers {
+object TodoControllerIntegrationSpec extends PlaySpecification
+    with EmbedConnection
+    with MongoTestHelpers {
 
   override def embedConnectionPort(): Int = { 27017 }
   override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_7 }
 
-  implicit val todoItemFormat = Json.format[TodoItem] // TODO: To be removed to avoid DRY (it's app code also)
+  // TODO: To be removed to  DRY (it's app code also)
+  implicit val todoItemFormat = Json.format[TodoItem]
 
   sequential
 
