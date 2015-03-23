@@ -45,7 +45,7 @@ class TodoControllerITSpec extends PlaySpecification
   def afterAll = { TodoItemDBH.closeDB; stoptMongo() }
 
   "GET to /todos" should {
-    "return all persisted data" in new WithServer(fakeApp, port) {
+    "return all todos" in new WithServer(fakeApp, port) {
       val todos = TodoItemDBH.create[TodoItem] {
         for (n <- 0 until 5)
           yield TodoItem(newId, s"Task $n for GET: /todos", false)
@@ -63,8 +63,9 @@ class TodoControllerITSpec extends PlaySpecification
 
   "GET to /todos/:id" should {
     "return the expected todo item" in new WithServer(fakeApp, port) {
-      val todo = TodoItem(newId, "Task for GET: /todos/:id", false)
-      TodoItemDBH.create[TodoItem](todo)
+      val todo = TodoItemDBH.create[TodoItem] {
+        TodoItem(newId, "Task for GET: /todos/:id", false)
+      }
 
       val response = await(WS.url(s"$url/${todo.id}").get())
 
@@ -91,13 +92,23 @@ class TodoControllerITSpec extends PlaySpecification
   }
 
   "PUT to /todos/:id" should {
-    "update a todo" in new WithServer(fakeApp, port) {
+    "update a todo item" in new WithServer(fakeApp, port) {
       val todo = TodoItemDBH.create[TodoItem] {
         TodoItem(newId, "Task for PUT: /todos/:id", false)
       }
 
+      val jsonRequest = Json.parse(
+        s"""
+          {
+            "id": "${todo.id}",
+            "description": "${todo.description}",
+            "completed": true
+          }
+        """.trim
+      )
+
       val response = await(
-        WS.url(s"$url/${todo.id}").put(Map("completed" -> Seq("true")))
+        WS.url(s"$url/${todo.id}").put(jsonRequest)
       )
 
       val updatedTodoInDB = TodoItemDBH.findOne[TodoItem]("id" -> todo.id)

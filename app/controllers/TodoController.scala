@@ -21,21 +21,24 @@ import models.TodoItem
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import play.api.mvc._
+import helpers.Helpers._
 
-import scala.concurrent.{ Promise, Future }
+import scala.concurrent.Future
 
 case class CreateTodo(description: String)
 
 trait TodoController { this: Controller with DataStore =>
 
-  val TodoCreated = Status(201)
-
   implicit val todoItemFormat = Json.format[TodoItem]
+  implicit val todoItemWrite = Json.writes[TodoItem]
   implicit val createTodoItemReads = Json.reads[CreateTodo]
 
   def get(id: String) = Action.async {
     find[TodoItem](id) map { item =>
-      Ok(Json.toJson(item))
+      item match {
+        case Some(persisted) => Ok(Json.toJson(persisted))
+        case None => NotFound
+      }
     }
   }
 
@@ -46,67 +49,55 @@ trait TodoController { this: Controller with DataStore =>
   }
 
   def save = Action.async(BodyParsers.parse.json) { implicit request =>
-    val modelValidation = request.body.validate[CreateTodo]
-
-    modelValidation.fold(
+    request.body.validate[CreateTodo].fold(
       errors => {
-        val result = BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))
-        Future.successful(result)
+        Future(BadRequest(toJsonErrors(errors)))
       },
       createTodo => {
         val newTodo = TodoItem(description = createTodo.description)
 
-        persist[TodoItem](newTodo) map (_ => TodoCreated)
-      }.recover { case e: Exception => InternalServerError(e.getMessage) }
+        persist[TodoItem](newTodo) map { _ =>
+          Created(Json.toJson(newTodo))
+        }
+      }.recover {
+        case e: Exception => InternalServerError
+      }
     )
   }
 
-  def update(id: String) = Action.async { implicit request =>
-    val reqBody = request.body.asFormUrlEncoded
-
-    val updatePromise = Promise[Result]
-
-    find[TodoItem](id) map { persisted =>
-      persisted match {
-        case Some(item: TodoItem) => {
-          val uDescription = reqBody flatMap (m => m.get("description")) flatMap (_.headOption)
-          val uCompletionStatus = reqBody flatMap (m => m.get("completed")) flatMap (_.headOption)
-
-          val updatedItem = item.update(uDescription, uCompletionStatus)
-
-          modify[TodoItem](updatedItem) map (_ => updatePromise.trySuccess(Ok))
-        }.recover {
-          case e: Exception =>
-            updatePromise.trySuccess(InternalServerError(e.getMessage))
+  def update(id: String) = Action.async(BodyParsers.parse.json) { implicit request =>
+    request.body.validate[TodoItem].fold(
+      errors => {
+        Future(BadRequest(toJsonErrors(errors)))
+      },
+      updatedTodo => {
+        modify[TodoItem](updatedTodo) map { _ =>
+          Ok(Json.toJson(updatedTodo))
         }
-        case _ => {
-          updatePromise.trySuccess(
-            BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'"))
-          )
-        }
+      }.recover {
+        case e: Exception => InternalServerError
       }
-    }
-
-    updatePromise.future
+    )
   }
 
   def delete(id: String) = Action.async { request =>
-    val deletePromise = Promise[Result]
+    find[TodoItem](id) flatMap { itemOption =>
 
-    find[TodoItem](id) map { e =>
-      e match {
-        case Some(item: TodoItem) => {
-          remove[TodoItem](item) map (_ => deletePromise.trySuccess(Ok))
-        }.recover { case e: Exception => deletePromise.trySuccess(InternalServerError(e.getMessage)) }
-        case _ => {
-          deletePromise.trySuccess(BadRequest(Json.obj("status" -> "KO", "message" -> s"INVALID_ITEM_ID: '$id'")))
+      itemOption match {
+        case None => {
+          val error = Json.obj("error" -> s"Invalid Item ID: '$id'")
+          Future(BadRequest(error))
+        }
+        case Some(item) => {
+          remove[TodoItem](item) map (_ => Ok)
+        }.recover {
+          case e: Exception => InternalServerError
         }
       }
     }
-
-    deletePromise.future
   }
 
 }
 
-object TodoController extends Controller with TodoController with MongoDBDataStore
+object TodoController extends Controller
+  with TodoController with MongoDBDataStore

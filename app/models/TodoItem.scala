@@ -26,9 +26,10 @@ case class TodoItem(
 ) extends Persistable {
 
   def update(_description: Option[String], _completed: Option[String]): TodoItem = {
+    println("Updating completion status: " + _completed)
     this.copy(
-      description = _description.getOrElse(description),
-      completed = _completed.map(compl => compl.toBoolean).getOrElse(completed)
+      description = _description.getOrElse(this.description),
+      completed = _completed.map(compl => compl.toBoolean).getOrElse(this.completed)
     )
   }
 

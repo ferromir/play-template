@@ -21,7 +21,7 @@ import de.flapdoodle.embed.mongo.distribution.Version
 import helpers.MongoTestHelpers
 import models.TodoItem
 import org.specs2.execute.Success
-import play.api.libs.json.{ Json, JsValue, JsArray }
+import play.api.libs.json.{ JsObject, Json, JsValue, JsArray }
 import play.api.test._
 
 import scala.concurrent._
@@ -85,6 +85,12 @@ object TodoControllerIntegrationSpec extends PlaySpecification
 
         status(result) must be equalTo 201
 
+        val newTodoAsJson = contentAsJson(result)
+        newTodoAsJson must beAnInstanceOf[JsObject]
+        (newTodoAsJson \ "description").as[String] must be equalTo newTodoDescription
+        (newTodoAsJson \ "completed").as[Boolean] must be equalTo false
+        (newTodoAsJson \ "id").as[String] must not beEmpty
+
         Await.result(findOne[TodoItem](Map("description" -> newTodoDescription)), 10 seconds) must beSome[TodoItem]
       }
     }
@@ -95,7 +101,7 @@ object TodoControllerIntegrationSpec extends PlaySpecification
         Await.result(loadDocument[TodoItem](todo), 10 seconds)
 
         val uri = routes.TodoController.update(todo.id).url
-        val req = FakeRequest("PUT", uri) withFormUrlEncodedBody ("completed" -> "true")
+        val req = FakeRequest("PUT", uri) withJsonBody (Json.toJson(todo.copy(completed = true)))
         val Some(result) = route(req)
 
         status(result) must be equalTo 200
