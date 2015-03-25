@@ -65,7 +65,7 @@ class TodoControllerITSpec extends PlaySpecification
 
       response.status must equalTo(OK)
       response.json must beAnInstanceOf[JsArray]
-      //(response.json \\ "id").size must be equalTo 5
+      (response.json \\ "id").size must be equalTo 5
       (response.json \\ "description").size must be equalTo 5
 
       todos foreach { todo => TodoItemDBH.remove("id" -> todo.id) }
@@ -82,7 +82,7 @@ class TodoControllerITSpec extends PlaySpecification
 
       response.status must equalTo(OK)
       response.json must beAnInstanceOf[JsObject]
-      //(response.json \ "id").as[String] must be equalTo todo.id
+      (response.json \ "id").as[String] must be equalTo todo.id
 
       TodoItemDBH.remove[TodoItem] ("id" -> todo.id)
     }
@@ -100,7 +100,7 @@ class TodoControllerITSpec extends PlaySpecification
 
       response.status must be equalTo 201
       response.json must beAnInstanceOf[JsObject]
-      //(response.json \ "id").as[String] must not beNull
+      (response.json \ "id").asOpt[String] must beSome
       (response.json \ "description").as[String] must be equalTo todoDescription
       (response.json \ "completed").as[Boolean] must beFalse
 
@@ -129,7 +129,7 @@ class TodoControllerITSpec extends PlaySpecification
       )
 
       response.status must be equalTo(OK)
-      //(response.json \ "id").as[String] must equalTo todo.id
+      (response.json \ "id").as[String] must be equalTo todo.id
       (response.json \ "completed").as[Boolean] must beTrue
 
       val updatedDescription = (response.json \ "description").as[String]
