@@ -8,7 +8,8 @@
  </check>
  <check level="warning" class="org.scalastyle.file.HeaderMatchesChecker" enabled="true">
   <parameters>
-   <parameter name="header"><![CDATA[// Copyright (C) 2015 Fernando Romero.
+    <parameter name="regex">true</parameter>
+   <parameter name="header"><![CDATA[// Copyright (C) (?:\d{4}) (:?\w+) (:?\w+).
 // See the LICENCE.txt file distributed with this work for additional
 // information regarding copyright ownership.
 //

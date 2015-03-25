@@ -1,2 +1,9 @@
 # Health check
-GET /hc controllers.HealthCheckController.get()
+GET         /hc             controllers.HealthCheckController.get()
+
+# TODO List
+GET         /todos/:id      controllers.TodoController.get(id: String)
+GET         /todos          controllers.TodoController.all()
+POST        /todos          controllers.TodoController.save()
+PUT         /todos/:id      controllers.TodoController.update(id: String)
+DELETE      /todos/:id      controllers.TodoController.delete(id: String)

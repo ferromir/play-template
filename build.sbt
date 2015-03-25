@@ -9,6 +9,13 @@ Defaults.itSettings
 
 Revolver.settings
 
+resolvers ++= Seq(
+  "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+  "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "RoundEights"         at "http://maven.spikemark.net/roundeights"
+)
+
 scalariformSettings
 
 lazy val root = (project in file(".")) enablePlugins(PlayScala) configs(IntegrationTest)
@@ -16,10 +23,15 @@ lazy val root = (project in file(".")) enablePlugins(PlayScala) configs(Integrat
 libraryDependencies ++= {
   val playVersion = play.core.PlayVersion.current
   Seq(
-    "com.typesafe.play" %% "play-test"     % playVersion % "test,it",
-    "com.typesafe.play" %% "play-ws"       % playVersion % "it"
+    "com.typesafe.play"     %% "play-ws"                % playVersion % "it",
+    "org.reactivemongo"     %% "play2-reactivemongo"    % "0.10.5.0.akka23",
+    "com.roundeights"       %% "hasher"                 % "1.0.0",
+    "com.typesafe.play"     %% "play-test"              % playVersion % "test,it",
+    "com.github.athieriot"  %% "specs2-embedmongo"      % "0.7.0"     % "test,it"
   )
 }
+
+scalacOptions in Test ++= Seq("-Yrangepos")
 
 outputPath in assembly := file("target/assembly/" + name.value + ".jar")
 
@@ -51,6 +63,8 @@ coverageMinimum := 100
 coverageExcludedPackages := "<empty>;Reverse.*"
 
 scalaSource in IntegrationTest <<= baseDirectory(_ / "it")
+
+testOptions in IntegrationTest := Seq(Tests.Filter(s => s.endsWith("ITSpec")))
 
 lazy val qa = TaskKey[Unit]("qa")
 
