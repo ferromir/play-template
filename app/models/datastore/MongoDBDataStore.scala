@@ -30,37 +30,63 @@ trait MongoDBDataStore extends DataStore {
 
   private def db = ReactiveMongoPlugin.db
 
-  override def newID(): String = BSONObjectID.generate.stringify
-
-  override def find[T](id: String)(implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Option[T]] =
+  override def find[T](id: String)(implicit
+    ct: ClassTag[T],
+    reader: Reads[T],
+    ec: ExecutionContext): Future[Option[T]] =
     collectionOf.find(Json.obj("id" -> id)).cursor[T].headOption
 
-  override def find[T](fields: (String, String)*)(implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Seq[T]] = {
+  override def find[T](fields: (String, String)*)(implicit
+    ct: ClassTag[T],
+    reader: Reads[T],
+    ec: ExecutionContext): Future[Seq[T]] = {
     val q = fields.map(f => Json.obj(f._1 -> f._2))
     collectionOf.find(q).cursor[T].collect[List]()
   }
 
-  override def findAll[T](implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Seq[T]] = {
+  override def findAll[T](implicit
+    ct: ClassTag[T],
+    reader: Reads[T],
+    ec: ExecutionContext): Future[Seq[T]] = {
     collectionOf.find(Json.obj()).cursor[T].collect[List]()
   }
 
-  override def persist[T](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T], ec: ExecutionContext): Future[Boolean] = {
+  override def persist[T](obj: T)(implicit
+    ct: ClassTag[T],
+    reader: Reads[T],
+    writer: Writes[T],
+    ec: ExecutionContext): Future[Boolean] = {
     collectionOf[T].insert(obj) map { lastError =>
-      if (lastError.inError) throw new Exception("Couldn't persist the document")
-      else true
+      if (lastError.inError) {
+        throw new Exception("Couldn't persist the document")
+      } else { lastError.ok }
     }
   }
 
-  override def modify[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], writer: Writes[T], ec: ExecutionContext): Future[Boolean] = {
+  override def modify[T <: Persistable](obj: T)(implicit
+    ct: ClassTag[T],
+    reader: Reads[T],
+    writer: Writes[T],
+    ec: ExecutionContext): Future[Boolean] = {
     val q = Json.obj("id" -> obj.id)
-    collectionOf[T].update(q, obj) map (_ => true)
+
+    collectionOf[T].update(q, obj) map { lastError =>
+      if (lastError.inError) {
+        throw new Exception("Couldn't persist the document")
+      } else { lastError.ok }
+    }
   }
 
-  override def remove[T <: Persistable](obj: T)(implicit ct: ClassTag[T], reader: Reads[T], ec: ExecutionContext): Future[Boolean] = {
+  override def remove[T <: Persistable](obj: T)(implicit
+    ct: ClassTag[T],
+    reader: Reads[T],
+    ec: ExecutionContext): Future[Boolean] = {
     val q = Json.obj("id" -> obj.id)
+
     collectionOf[T].remove(q) map { lastError =>
-      if (lastError.inError) throw new Exception("Couldn't persist the document")
-      else true
+      if (lastError.inError) {
+        throw new Exception("Couldn't persist the document")
+      } else { lastError.ok }
     }
   }
 

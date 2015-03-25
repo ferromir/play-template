@@ -14,31 +14,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ithelpers
+package models
 
-import models.TodoItem
-import reactivemongo.bson.{BSONDocumentWriter, BSONDocument, BSONDocumentReader}
+import play.api.libs.json._
 
-object BSONFormatters {
+object JsonFormats {
 
-  implicit object TodoItemReader extends BSONDocumentReader[TodoItem] {
-    def read(doc: BSONDocument): TodoItem = {
-      val id = doc.getAs[String]("id").get
-      val description = doc.getAs[String]("description").get
-      val completed = doc.getAs[Boolean]("completed").get
-
-      new TodoItem(id, description, completed)
-    }
-  }
-
-  implicit object TodoItemWriter extends BSONDocumentWriter[TodoItem] {
-    def write(item: TodoItem): BSONDocument = {
-      BSONDocument(
-        "id" -> item.id,
-        "description" -> item.description,
-        "completed" -> item.completed
+  implicit val todoItemRead = new Reads[TodoItem] {
+    def reads(json: JsValue): JsResult[TodoItem] = {
+      JsSuccess(
+        new TodoItem(
+          (json \ "id").as[String],
+          (json \ "description").as[String],
+          (json \ "completed").as[Boolean]
+        )
       )
     }
   }
 
+  implicit val todoItemWrite = new Writes[TodoItem] {
+    def writes(todoItem: TodoItem): JsValue = {
+      Json.obj(
+        "id" -> todoItem.id,
+        "description" -> todoItem.description,
+        "completed" -> todoItem.completed
+      )
+    }
+  }
 }

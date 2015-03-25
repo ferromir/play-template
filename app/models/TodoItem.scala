@@ -16,21 +16,32 @@
 
 package models
 
-import scala.util.Random
+import com.roundeights.hasher.Implicits._
+import java.lang.{ System => Sys }
+import scala.util.{ Random => Rand }
 
-// TODO: Improve the ID generation
-case class TodoItem(
-    override val id: String = new Random(System.currentTimeMillis()).nextString(12),
-    description: String,
-    completed: Boolean = false
-) extends Persistable {
+case class TodoItem(description: String, completed: Boolean = false)
+    extends Persistable {
 
-  def update(_description: Option[String], _completed: Option[String]): TodoItem = {
-    println("Updating completion status: " + _completed)
-    this.copy(
-      description = _description.getOrElse(this.description),
-      completed = _completed.map(compl => compl.toBoolean).getOrElse(this.completed)
+  private[this] var id: String =
+    new Rand(Sys.currentTimeMillis()).nextString(ID_LENGTH).md5.hex
+
+  def this(id: String, description: String, completed: Boolean) = {
+    this(description, completed)
+    this.id = id
+  }
+
+  def update(desc: Option[String], compl: Option[Boolean]): TodoItem = {
+    new TodoItem(
+      this.id,
+      desc.getOrElse(this.description),
+      compl.getOrElse(this.completed)
     )
   }
 
+  override def id(): String = this.id
+
+  override def toString: String = {
+    s"TodoItem(${this.id},${this.description},${this.completed})"
+  }
 }

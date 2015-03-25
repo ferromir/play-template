@@ -14,13 +14,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package helpers
 
-trait Persistable {
+import play.api.data.validation.ValidationError
+import play.api.libs.json.{ JsValue, JsObject, JsPath, JsError, Json }
 
-  val ID_LENGTH = 12
+object Helpers {
 
-  def id(): String = {
-    throw new Exception("To be overriden")
+  def toJsonErrors(errors: Seq[(JsPath, Seq[ValidationError])]): JsValue = {
+    Json.obj("errors" -> JsError.toFlatJson(errors))
   }
 }
+
+object Implicits {}
