@@ -27,7 +27,8 @@ libraryDependencies ++= {
     "org.reactivemongo"     %% "play2-reactivemongo"    % "0.10.5.0.akka23",
     "com.roundeights"       %% "hasher"                 % "1.0.0",
     "com.typesafe.play"     %% "play-test"              % playVersion % "test,it",
-    "com.github.athieriot"  %% "specs2-embedmongo"      % "0.7.0"     % "test,it"
+    "com.github.athieriot"  %% "specs2-embedmongo"      % "0.7.0"     % "test,it",
+    "com.wordnik"           %% "swagger-play2"          % "1.3.12"
   )
 }
 

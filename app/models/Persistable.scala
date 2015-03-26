@@ -18,7 +18,7 @@ package models
 
 trait Persistable {
 
-  val ID_LENGTH = 12
+  protected[models] def ID_LENGTH = 12
 
   def id(): String = {
     throw new Exception("To be overriden")

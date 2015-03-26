@@ -18,10 +18,25 @@ package models
 
 import com.roundeights.hasher.Implicits._
 import java.lang.{ System => Sys }
-import scala.util.{ Random => Rand }
+import com.wordnik.swagger.annotations._
 
-case class TodoItem(description: String, completed: Boolean = false)
-    extends Persistable {
+import scala.util.{ Random => Rand }
+import scala.annotation.meta.field
+
+@ApiModel
+case class TodoItem(
+    @(ApiModelProperty @field)(
+      value = "description",
+      position = 2,
+      required = true
+    ) description: String,
+    @(ApiModelProperty @field)(
+      value = "completion status",
+      dataType = "boolean",
+      position = 3,
+      required = true
+    ) completed: Boolean = false
+) extends Persistable {
 
   private[this] var id: String =
     new Rand(Sys.currentTimeMillis()).nextString(ID_LENGTH).md5.hex
@@ -39,6 +54,7 @@ case class TodoItem(description: String, completed: Boolean = false)
     )
   }
 
+  @(ApiModelProperty @field)(value = "id", position = 1, required = true)
   override def id(): String = this.id
 
   override def toString: String = {

@@ -7,3 +7,8 @@ GET         /todos          controllers.TodoController.all()
 POST        /todos          controllers.TodoController.save()
 PUT         /todos/:id      controllers.TodoController.update(id: String)
 DELETE      /todos/:id      controllers.TodoController.delete(id: String)
+
+# Help
+GET     /help               controllers.ApiHelpController.getResources
+GET     /help/todos         controllers.ApiHelpController.getResource(path = "/todos")
+GET     /swagger-ui/*file   controllers.Assets.at(path = "/public/swagger-ui", file)
