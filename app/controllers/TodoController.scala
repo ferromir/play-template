@@ -139,7 +139,10 @@ trait TodoController { this: Controller with DataStore =>
   )
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "TODO item updated"),
-    new ApiResponse(code = 400, message = "Invalid UpdateTodo request information"),
+    new ApiResponse(
+      code = 400,
+      message = "Invalid UpdateTodo request information"
+    ),
     new ApiResponse(code = 404, message = "Invalid TODO item"),
     new ApiResponse(code = 500, message = "Internal Server Error")
   ))

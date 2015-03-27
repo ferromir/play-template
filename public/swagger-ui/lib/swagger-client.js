@@ -2858,6 +2858,8 @@ var SwaggerRequest = function (type, url, params, opts, successCallback, errorCa
     throw errors;
   }
 
+  console.log(opts)
+
   this.type = this.type.toUpperCase();
 
   // set request, response content type headers
@@ -2960,7 +2962,7 @@ var SwaggerRequest = function (type, url, params, opts, successCallback, errorCa
 SwaggerRequest.prototype.setHeaders = function (params, opts, operation) {
   // default type
   var accepts = opts.responseContentType || 'application/json';
-  var consumes = opts.requestContentType || 'application/json';
+  var consumes = opts.requestContentType;
 
   var allDefinedParams = operation.parameters;
   var definedFormParams = [];
